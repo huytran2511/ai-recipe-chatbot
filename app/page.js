@@ -8,7 +8,9 @@ export default function Home() {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: "Hi! I'm the Headstarter support assistant. How can I help you today?",
+      content: `Hello! I'm RecipeGenie, your personal culinary assistant. Just tell me what ingredients you have, 
+      and I'll work my magic to create delicious recipes tailored to your preferences. 
+      Whether you have dietary needs or allergies, I've got you covered! Let's get cooking—what ingredients do you have today?`,
     },
   ])
   const [message, setMessage] = useState('')
@@ -94,7 +96,8 @@ export default function Home() {
         direction={'column'}
         width="500px"
         height="700px"
-        border="1px solid black"
+        border="1px solid #979797"
+        borderRadius={1}
         p={2}
         spacing={3}
       >
@@ -116,14 +119,18 @@ export default function Home() {
               <Box
                 bgcolor={
                   message.role === 'assistant'
-                    ? 'primary.main'
-                    : 'secondary.main'
+                    ? '#dedede'
+                    : 'primary.main'
                 }
-                color="white"
-                borderRadius={16}
+                color={
+                  message.role === 'assistant'
+                    ? 'black'
+                    : 'white'
+                }
+                borderRadius={4}
                 p={3}
               >
-                <ReactMarkdown>{message.content}</ReactMarkdown>  {/* Render the content with markdown support */}
+                <ReactMarkdown>{message.content}</ReactMarkdown>
               </Box>
             </Box>
           ))}
