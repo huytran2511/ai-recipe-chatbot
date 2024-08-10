@@ -1,4 +1,4 @@
-import {NextResponse} from 'next/server' // Import NextResponse from Next.js for handling responses
+import { NextResponse } from 'next/server' // Import NextResponse from Next.js for handling responses
 import OpenAI from 'openai' // Import OpenAI library for interacting with the OpenAI API
 
 // System prompt for the AI, providing guidelines on how to respond to users
