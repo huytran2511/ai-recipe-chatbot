@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, Button, Stack, TextField } from '@mui/material'
+import { Box, Button, Stack, TextField, Typography } from '@mui/material'
 import { useState, useRef, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 
@@ -92,13 +92,24 @@ export default function Home() {
       justifyContent="center"
       alignItems="center"
     >
+      <Typography
+        variant="h4"
+        align="center"
+        gutterBottom
+        sx={{ fontWeight: 'bold' }}
+      >
+        <span style={{ color: 'black' }}>Welcome to </span>
+        <span style={{ color: '#4285F4' }}>RecipeGenie</span>
+        <span style={{ color: 'black' }}>, an </span>
+        <span style={{ color: '#4285F4' }}>AI recipe Chatbot</span>
+      </Typography>
       <Stack
         direction={'column'}
-        width="500px"
+        width="800px"
         height="700px"
         border="1px solid #979797"
-        borderRadius={1}
-        p={2}
+        borderRadius={3}
+        p={3}
         spacing={3}
       >
         <Stack
@@ -120,7 +131,7 @@ export default function Home() {
                 bgcolor={
                   message.role === 'assistant'
                     ? '#dedede'
-                    : 'primary.main'
+                    : '#4285F4'
                 }
                 color={
                   message.role === 'assistant'
@@ -128,7 +139,11 @@ export default function Home() {
                     : 'white'
                 }
                 borderRadius={4}
-                p={3}
+                p={2}
+                pl={3}
+                pr={3}
+                lineHeight={1.8}
+                maxWidth="80%"
               >
                 <ReactMarkdown>{message.content}</ReactMarkdown>
               </Box>
@@ -144,11 +159,16 @@ export default function Home() {
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyPress}
             disabled={isLoading}
+            sx={{
+              borderRadius: 4,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 4}}}
           />
           <Button
             variant="contained" 
             onClick={sendMessage}
             disabled={isLoading}
+            sx={{borderRadius: 4, backgroundColor: '#4285F4'}}
           >
             {isLoading ? 'Sending...' : 'Send'}
           </Button>
