@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server' // Import NextResponse from Next.js for handling responses
-import OpenAI from 'openai' // Import OpenAI library for interacting with the OpenAI API
+import { NextResponse } from 'next/server'
+import OpenAI from 'openai'
 
 // System prompt for the AI, providing guidelines on how to respond to users
 const systemPrompt = `You are RecipeGenie, a recipe-generating chatbot. Your role is to help users create recipes based on the ingredients they have available. You should also consider any dietary preferences (such as vegan, keto, paleo, etc.) and allergies that the user mentions.
@@ -66,45 +66,45 @@ Luồng tương tác:
 3. Các câu hỏi tiếp theo: Sẵn sàng trả lời các câu hỏi tiếp theo hoặc cung cấp thêm thông tin chi tiết về công thức hoặc thông tin dinh dưỡng.
 Thân thiện với người dùng, dễ thích nghi và phản hồi các yêu cầu khác nhau liên quan đến công thức và nhu cầu ăn kiêng.`,
   }
-  return prompts[language] || prompts.en; // Default to English if language not supported
+  return prompts[language] || prompts.en; // Default to english if language not supported
 }
 
 // POST function to handle incoming requests
 export async function POST(req) {
-  const openai = new OpenAI() // Create a new instance of the OpenAI client
-  const data = await req.json() // Parse the JSON body of the incoming request
+  const openai = new OpenAI() 
+  const data = await req.json() 
 
   // Extract the language parameter from the request
-  const language = data.language || 'en' // Default to English if not provided
-  const systemPrompt = getSystemPrompt(language) // Get the system prompt based on the language
+  const language = data.language || 'en' 
+  const systemPrompt = getSystemPrompt(language) 
 
   // Create a chat completion request to the OpenAI API
   const completion = await openai.chat.completions.create({
-    messages: [{role: 'system', content: systemPrompt}, ...data], // Include the system prompt and user messages
-    model: 'gpt-4o-mini', // Specify the model to use
-    stream: true, // Enable streaming responses
+    messages: [{role: 'system', content: systemPrompt}, ...data], 
+    model: 'gpt-4o-mini',
+    stream: true,
   })
 
   // Create a ReadableStream to handle the streaming response
   const stream = new ReadableStream({
     async start(controller) {
-      const encoder = new TextEncoder() // Create a TextEncoder to convert strings to Uint8Array
+      const encoder = new TextEncoder()
       try {
         // Iterate over the streamed chunks of the response
         for await (const chunk of completion) {
-          const content = chunk.choices[0]?.delta?.content // Extract the content from the chunk
+          const content = chunk.choices[0]?.delta?.content
           if (content) {
-            const text = encoder.encode(content) // Encode the content to Uint8Array
-            controller.enqueue(text) // Enqueue the encoded text to the stream
+            const text = encoder.encode(content)
+            controller.enqueue(text)
           }
         }
       } catch (err) {
-        controller.error(err) // Handle any errors that occur during streaming
+        controller.error(err)
       } finally {
-        controller.close() // Close the stream when done
+        controller.close()
       }
     },
   })
 
-  return new NextResponse(stream) // Return the stream as the response
+  return new NextResponse(stream)
 }
