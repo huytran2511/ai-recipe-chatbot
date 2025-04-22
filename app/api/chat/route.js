@@ -15,6 +15,7 @@ Interaction Flow:
 3. Follow-up Queries: Be ready to answer follow-up questions or provide additional details about the recipes or nutrition facts.
 Be user-friendly, adaptable, and responsive to various requests related to recipes and dietary needs.`
 
+// Function to retrieve the system prompt in the desired language
 const getSystemPrompt = (language) => {
   const prompts = {
     en: `You are RecipeGenie, a recipe-generating chatbot. Your role is to help users create recipes based on the ingredients they have available. You should also consider any dietary preferences (such as vegan, keto, paleo, etc.) and allergies that the user mentions.
@@ -66,45 +67,48 @@ Luồng tương tác:
 3. Các câu hỏi tiếp theo: Sẵn sàng trả lời các câu hỏi tiếp theo hoặc cung cấp thêm thông tin chi tiết về công thức hoặc thông tin dinh dưỡng.
 Thân thiện với người dùng, dễ thích nghi và phản hồi các yêu cầu khác nhau liên quan đến công thức và nhu cầu ăn kiêng.`,
   }
-  return prompts[language] || prompts.en; // Default to english if language not supported
+  
+  // If the requested language isn't supported, default to English
+  return prompts[language] || prompts.en;
 }
 
-// POST function to handle incoming requests
+// POST request handler (entry point for chatbot communication)
 export async function POST(req) {
   const openai = new OpenAI() 
   const data = await req.json() 
 
-  // Extract the language parameter from the request
+  // Determine the language to use for the chatbot system prompt
   const language = data.language || 'en' 
   const systemPrompt = getSystemPrompt(language) 
 
-  // Create a chat completion request to the OpenAI API
+  // Send a request to OpenAI's chat API with streaming enabled
   const completion = await openai.chat.completions.create({
     messages: [{role: 'system', content: systemPrompt}, ...data], 
     model: 'gpt-4o-mini',
     stream: true,
   })
 
-  // Create a ReadableStream to handle the streaming response
+  // Wrap the streaming output in a ReadableStream for client-side handling
   const stream = new ReadableStream({
     async start(controller) {
-      const encoder = new TextEncoder()
+      const encoder = new TextEncoder() // Convert strings to UTF-8 bytes
       try {
-        // Iterate over the streamed chunks of the response
+        // Stream each chunk of the model's output
         for await (const chunk of completion) {
           const content = chunk.choices[0]?.delta?.content
           if (content) {
             const text = encoder.encode(content)
-            controller.enqueue(text)
+            controller.enqueue(text) // Send the text to the client
           }
         }
       } catch (err) {
-        controller.error(err)
+        controller.error(err) // Handle any streaming errors
       } finally {
-        controller.close()
+        controller.close() // End the stream
       }
     },
   })
 
+  // Return the streamed response to the client
   return new NextResponse(stream)
 }

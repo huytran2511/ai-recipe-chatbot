@@ -5,7 +5,9 @@ import { useState, useRef, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 
 export default function Home() {
+  // Language state (default: English)
   const [language, setLanguage] = useState('en')
+  // Chat messages state, initialized with assistant greeting
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -14,9 +16,12 @@ export default function Home() {
       Whether you have dietary needs or allergies, I've got you covered! Let's get cooking—what ingredients do you have today?`,
     },
   ])
+
+  // Current input message and loading state
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
+  // Translation dictionary for multilingual UI
   const translations = {
     en: {
       welcomeTitle: "Welcome to RecipeGenie!",
@@ -80,6 +85,7 @@ export default function Home() {
     },
   }
 
+  // Update UI language and reset messages to language-specific greeting
   const handleLanguageChange = (event) => {
     const newLanguage = event.target.value
     setLanguage(newLanguage)
@@ -91,11 +97,13 @@ export default function Home() {
     ])
   }
 
+  // Sends a message to the server and handles the streamed response
   const sendMessage = async () => {
-    if (!message.trim()) return;  // Don't send empty messages
+    if (!message.trim()) return;  // Ignore empty messages
     setIsLoading(true)
   
     setMessage('')
+    // Optimistically update the UI with user message and empty assistant placeholder
     setMessages((messages) => [
       ...messages,
       { role: 'user', content: message },
@@ -114,7 +122,8 @@ export default function Home() {
       if (!response.ok) {
         throw new Error('Network response was not ok')
       }
-  
+      
+      // Stream the assistant response chunk-by-chunk
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
   
@@ -122,6 +131,7 @@ export default function Home() {
         const { done, value } = await reader.read()
         if (done) break
         const text = decoder.decode(value, { stream: true })
+        // Append streamed text to the assistant's last message
         setMessages((messages) => {
           let lastMessage = messages[messages.length - 1]
           let otherMessages = messages.slice(0, messages.length - 1)
@@ -141,6 +151,7 @@ export default function Home() {
     setIsLoading(false)
   }
 
+  // Submit on Enter (without Shift)
   const handleKeyPress = (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault()
@@ -148,12 +159,11 @@ export default function Home() {
     }
   }
 
+  // Auto scroll to the bottom of the chat on new messages
   const messagesEndRef = useRef(null)
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
-
   useEffect(() => {
     scrollToBottom()
   }, [messages])
@@ -167,17 +177,17 @@ export default function Home() {
       justifyContent="center"
       alignItems="center"
     >
-      <Typography
-        variant="h3"
-        align="center"
-        gutterBottom
-        sx={{ fontWeight: 'bold' }}
-      >
+      {/* App Title */}
+      <Typography variant="h3" align="center" gutterBottom sx={{ fontWeight: 'bold' }}>
         {translations[language].welcomeTitle}
       </Typography>
+
+      {/* Chat interface layout */}
       <Box display="flex" justifyContent="space-between" width="800px">
+
+        {/* Chat window + input area */}
         <Stack
-          direction={'column'}
+          direction="column"
           width="800px"
           height="700px"
           border="1px solid #979797"
@@ -185,32 +195,17 @@ export default function Home() {
           p={3}
           spacing={3}
         >
-          <Stack
-            direction={'column'}
-            spacing={2}
-            flexGrow={1}
-            overflow="auto"
-            maxHeight="100%"
-          >
+          {/* Display messages */}
+          <Stack direction="column" spacing={2} flexGrow={1} overflow="auto" maxHeight="100%">
             {messages.map((message, index) => (
               <Box
                 key={index}
                 display="flex"
-                justifyContent={
-                  message.role === 'assistant' ? 'flex-start' : 'flex-end'
-                }
+                justifyContent={message.role === 'assistant' ? 'flex-start' : 'flex-end'}
               >
                 <Box
-                  bgcolor={
-                    message.role === 'assistant'
-                      ? '#dedede'
-                      : '#4285F4'
-                  }
-                  color={
-                    message.role === 'assistant'
-                      ? 'black'
-                      : 'white'
-                  }
+                  bgcolor={message.role === 'assistant' ? '#dedede' : '#4285F4'}
+                  color={message.role === 'assistant' ? 'black' : 'white'}
                   borderRadius={4}
                   p={2}
                   pl={3}
@@ -224,7 +219,9 @@ export default function Home() {
             ))}
             <div ref={messagesEndRef} />
           </Stack>
-          <Stack direction={'row'} spacing={2}>
+
+          {/* Input field and send button */}
+          <Stack direction="row" spacing={2}>
             <TextField
               label={translations[language].messagePlaceholder}
               fullWidth
@@ -235,20 +232,24 @@ export default function Home() {
               sx={{
                 borderRadius: 4,
                 '& .MuiOutlinedInput-root': {
-                  borderRadius: 4}}}
+                  borderRadius: 4
+                }
+              }}
             />
             <Button
-              variant="contained" 
+              variant="contained"
               onClick={sendMessage}
               disabled={isLoading}
-              sx={{borderRadius: 4, backgroundColor: '#4285F4'}}
+              sx={{ borderRadius: 4, backgroundColor: '#4285F4' }}
             >
               {isLoading ? 'Sending...' : translations[language].sendButton}
             </Button>
           </Stack>
         </Stack>
+
+        {/* Language selector */}
         <Stack direction="column" alignItems="center" ml={2}>
-          <InputLabel sx={{ textAlign: 'left', color: 'black', pb: 0.5, width: '100%'}}>
+          <InputLabel sx={{ textAlign: 'left', color: 'black', pb: 0.5, width: '100%' }}>
             {translations[language].languageLabel}
           </InputLabel>
           <FormControl>
